@@ -662,47 +662,166 @@
 
             <!-- Tab: Preferencias -->
             <div id="tab-preferencias" class="tab-content p-6">
-                <h2 class="text-2xl font-bold text-gray-900 mb-6">Preferencias</h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="bg-white rounded-lg shadow p-6">
-                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Perfil de Usuario</h3>
-                        <div class="space-y-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Descripción del negocio</label>
-                                <textarea class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" rows="3" placeholder="Describe tu negocio..."></textarea>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Tono de comunicación</label>
-                                <select class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                    <option>Profesional</option>
-                                    <option>Casual</option>
-                                    <option>Inspiracional</option>
-                                </select>
-                            </div>
+                <h2 class="text-2xl font-bold text-gray-900 mb-6">🎨 Preferencias de Marca</h2>
+                
+                <!-- Información de Marca -->
+                <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                        <span class="mr-2">🏢</span> Información de Marca
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Nombre de la marca</label>
+                            <input type="text" id="brandName" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Mi Empresa">
                         </div>
-                    </div>
-                    
-                    <div class="bg-white rounded-lg shadow p-6">
-                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Configuración de Plataformas</h3>
-                        <div class="space-y-4">
-                            <div class="flex items-center justify-between">
-                                <span class="text-sm font-medium text-gray-700">Instagram</span>
-                                <label class="relative inline-flex items-center cursor-pointer">
-                                    <input type="checkbox" class="sr-only peer" checked>
-                                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                                </label>
-                            </div>
-                            <div class="flex items-center justify-between">
-                                <span class="text-sm font-medium text-gray-700">LinkedIn</span>
-                                <label class="relative inline-flex items-center cursor-pointer">
-                                    <input type="checkbox" class="sr-only peer" checked>
-                                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                                </label>
-                            </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Industria</label>
+                            <select id="industry" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="">Seleccionar industria</option>
+                                <option value="tecnologia">Tecnología</option>
+                                <option value="marketing">Marketing</option>
+                                <option value="salud">Salud</option>
+                                <option value="educacion">Educación</option>
+                                <option value="finanzas">Finanzas</option>
+                                <option value="retail">Retail</option>
+                                <option value="servicios">Servicios</option>
+                                <option value="otro">Otro</option>
+                            </select>
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Audiencia objetivo</label>
+                            <textarea id="targetAudience" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" rows="2" placeholder="Describe tu audiencia objetivo..."></textarea>
                         </div>
                     </div>
                 </div>
+
+                <!-- Identidad Visual -->
+                <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                        <span class="mr-2">🎨</span> Identidad Visual
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Colores de marca</label>
+                            <div class="space-y-2">
+                                <input type="text" id="brandColors" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="#3B82F6,#1E40AF,#FFFFFF,#F3F4F6">
+                                <p class="text-xs text-gray-500">Separar colores con comas (formato hex)</p>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Estilo visual</label>
+                            <select id="visualStyle" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="moderno">Moderno</option>
+                                <option value="minimalista">Minimalista</option>
+                                <option value="elegante">Elegante</option>
+                                <option value="creativo">Creativo</option>
+                                <option value="corporativo">Corporativo</option>
+                                <option value="juvenil">Juvenil</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Tipografía principal</label>
+                            <select id="typographyPrimary" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="Inter, sans-serif">Inter (Sans-serif)</option>
+                                <option value="Roboto, sans-serif">Roboto (Sans-serif)</option>
+                                <option value="Poppins, sans-serif">Poppins (Sans-serif)</option>
+                                <option value="Montserrat, sans-serif">Montserrat (Sans-serif)</option>
+                                <option value="Open Sans, sans-serif">Open Sans (Sans-serif)</option>
+                                <option value="Playfair Display, serif">Playfair Display (Serif)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Tipografía secundaria</label>
+                            <select id="typographySecondary" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="Inter, sans-serif">Inter (Sans-serif)</option>
+                                <option value="Roboto, sans-serif">Roboto (Sans-serif)</option>
+                                <option value="Poppins, sans-serif">Poppins (Sans-serif)</option>
+                                <option value="Montserrat, sans-serif">Montserrat (Sans-serif)</option>
+                                <option value="Open Sans, sans-serif">Open Sans (Sans-serif)</option>
+                                <option value="Playfair Display, serif">Playfair Display (Serif)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Comunicación y Contenido -->
+                <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                        <span class="mr-2">💬</span> Comunicación y Contenido
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Tono de comunicación</label>
+                            <select id="communicationTone" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="profesional">Profesional</option>
+                                <option value="casual">Casual</option>
+                                <option value="inspiracional">Inspiracional</option>
+                                <option value="educativo">Educativo</option>
+                                <option value="divertido">Divertido</option>
+                                <option value="autoritativo">Autoritativo</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Estilo de imágenes</label>
+                            <input type="text" id="imageStylePreferences" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="profesional, limpio, moderno">
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Valores de marca</label>
+                            <textarea id="brandValues" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" rows="2" placeholder="Innovación, calidad, confianza..."></textarea>
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Temas de contenido preferidos</label>
+                            <textarea id="contentThemes" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" rows="2" placeholder="Marketing digital, tendencias, casos de éxito..."></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Configuración de Plataformas -->
+                <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                        <span class="mr-2">📱</span> Configuración de Plataformas
+                    </h3>
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between p-4 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg text-white">
+                            <div class="flex items-center">
+                                <span class="text-2xl mr-3">📷</span>
+                                <div>
+                                    <span class="font-medium">Instagram</span>
+                                    <p class="text-sm opacity-90">Contenido visual y stories</p>
+                                </div>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" class="sr-only peer" checked>
+                                <div class="w-11 h-6 bg-white bg-opacity-30 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-white peer-focus:ring-opacity-30 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-white peer-checked:bg-opacity-30"></div>
+                            </label>
+                        </div>
+                        <div class="flex items-center justify-between p-4 bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg text-white">
+                            <div class="flex items-center">
+                                <span class="text-2xl mr-3">💼</span>
+                                <div>
+                                    <span class="font-medium">LinkedIn</span>
+                                    <p class="text-sm opacity-90">Contenido profesional y networking</p>
+                                </div>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" class="sr-only peer" checked>
+                                <div class="w-11 h-6 bg-white bg-opacity-30 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-white peer-focus:ring-opacity-30 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-white peer-checked:bg-opacity-30"></div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Botones de Acción -->
+                <div class="flex justify-end space-x-4">
+                    <button onclick="loadBrandPreferences()" class="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors">
+                        Cargar Preferencias
+                    </button>
+                    <button onclick="saveBrandPreferences()" class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
+                        Guardar Preferencias
+                    </button>
+                </div>
             </div>
+
         </div>
     </div>
 
@@ -883,18 +1002,25 @@
                                     <input type="file" id="imageUpload" accept="image/*,video/*" class="hidden">
                                     <input type="file" id="multipleImageUpload" accept="image/*,video/*" multiple class="hidden">
                                     
-                                    <button type="button" id="uploadButton" onclick="handleUploadClick()" class="inline-flex items-center px-2 py-1 border border-gray-300 shadow-sm text-xs leading-4 font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                                        <i data-lucide="upload" class="w-3 h-3 mr-1"></i>
-                                        <span id="uploadButtonText">Subir</span>
-                                    </button>
+                                    <div class="flex justify-center space-x-2">
+                                        <button type="button" id="uploadButton" onclick="handleUploadClick()" class="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-xs leading-4 font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                            <i data-lucide="upload" class="w-3 h-3 mr-1"></i>
+                                            <span id="uploadButtonText">📤 Subir</span>
+                                        </button>
+                                        
+                                        <button type="button" onclick="generateImageAI()" class="inline-flex items-center px-3 py-2 border border-green-300 shadow-sm text-xs leading-4 font-medium rounded text-green-700 bg-green-50 hover:bg-green-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                                            <i data-lucide="image" class="w-3 h-3 mr-1"></i>
+                                            🤖 Crear Imagen
+                                        </button>
+                                        
+                                        <button type="button" id="clearMediaButton" onclick="clearAllMedia()" class="hidden inline-flex items-center px-3 py-2 border border-red-300 shadow-sm text-xs leading-4 font-medium rounded text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                                            <i data-lucide="trash-2" class="w-3 h-3 mr-1"></i>
+                                            🗑️ Limpiar
+                                        </button>
+                                    </div>
                                     
-                                    <button type="button" id="clearMediaButton" onclick="clearAllMedia()" class="hidden ml-1 inline-flex items-center px-2 py-1 border border-red-300 shadow-sm text-xs leading-4 font-medium rounded text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
-                                        <i data-lucide="trash-2" class="w-3 h-3 mr-1"></i>
-                                        Limpiar
-                                    </button>
-                                    
-                                    <p class="text-xs text-gray-500 mt-1">
-                                        <span id="uploadHelpText">PNG, JPG, MP4</span>
+                                    <p class="text-xs text-gray-500 mt-2">
+                                        <span id="uploadHelpText">📤 Subir archivos | 🤖 Generar con IA | 🏦 Banco de imágenes</span>
                                     </p>
                                 </div>
                             </div>
@@ -1778,6 +1904,157 @@
                 closeMobileSidebar();
             }
         });
+        
+        // Función para generar imagen con IA
+        async function generateImageAI() {
+            try {
+                const title = document.getElementById('editPostTitle').value;
+                const content = document.getElementById('editPostContent').value;
+                const platform = document.querySelector('input[name="platform"]:checked')?.value || 'instagram';
+                
+                if (!title && !content) {
+                    showNotification('Por favor, agrega título o contenido para generar la imagen', 'error');
+                    return;
+                }
+                
+                // Mostrar indicador de carga
+                const button = event.target;
+                const originalText = button.innerHTML;
+                button.innerHTML = '<i data-lucide="loader" class="w-3 h-3 mr-1 animate-spin"></i>Generando...';
+                button.disabled = true;
+                
+                const response = await fetch('/api/generate-image', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        title: title,
+                        content: content,
+                        platform: platform
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    // Mostrar la imagen generada
+                    const previewDiv = document.getElementById('singleImagePreview');
+                    const previewImg = document.getElementById('previewImg');
+                    
+                    previewImg.src = result.image_url;
+                    previewDiv.classList.remove('hidden');
+                    
+                    // Mostrar botón de limpiar
+                    document.getElementById('clearMediaButton').classList.remove('hidden');
+                    
+                    showNotification(`🎨 ${result.message}`, 'success');
+                } else {
+                    showNotification(`Error: ${result.error}`, 'error');
+                }
+                
+            } catch (error) {
+                console.error('Error:', error);
+                showNotification('Error de conexión al generar imagen', 'error');
+            } finally {
+                // Restaurar botón
+                const button = event.target;
+                button.innerHTML = '<i data-lucide="image" class="w-3 h-3 mr-1"></i>🤖 Crear Imagen';
+                button.disabled = false;
+                lucide.createIcons();
+            }
+        }
+        
+        // Función para cargar preferencias de marca
+        async function loadBrandPreferences() {
+            try {
+                const response = await fetch('/api/brand-preferences');
+                const result = await response.json();
+                
+                if (result.success && result.preferences) {
+                    const prefs = result.preferences;
+                    
+                    // Llenar campos de preferencias
+                    document.getElementById('brandName').value = prefs.brand_name || '';
+                    document.getElementById('industry').value = prefs.industry || '';
+                    document.getElementById('targetAudience').value = prefs.target_audience || '';
+                    document.getElementById('brandColors').value = prefs.brand_colors || '';
+                    document.getElementById('visualStyle').value = prefs.visual_style || '';
+                    document.getElementById('typographyPrimary').value = prefs.typography_primary || '';
+                    document.getElementById('typographySecondary').value = prefs.typography_secondary || '';
+                    document.getElementById('communicationTone').value = prefs.communication_tone || '';
+                    document.getElementById('imageStylePreferences').value = prefs.image_style_preferences || '';
+                    document.getElementById('brandValues').value = prefs.brand_values || '';
+                    document.getElementById('contentThemes').value = prefs.content_themes || '';
+                    
+                    showNotification('Preferencias cargadas exitosamente', 'success');
+                } else {
+                    showNotification('No se encontraron preferencias guardadas', 'error');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showNotification('Error al cargar preferencias', 'error');
+            }
+        }
+        
+        // Función para guardar preferencias de marca
+        async function saveBrandPreferences() {
+            try {
+                const preferences = {
+                    brand_name: document.getElementById('brandName').value,
+                    industry: document.getElementById('industry').value,
+                    target_audience: document.getElementById('targetAudience').value,
+                    brand_colors: document.getElementById('brandColors').value,
+                    visual_style: document.getElementById('visualStyle').value,
+                    typography_primary: document.getElementById('typographyPrimary').value,
+                    typography_secondary: document.getElementById('typographySecondary').value,
+                    communication_tone: document.getElementById('communicationTone').value,
+                    image_style_preferences: document.getElementById('imageStylePreferences').value,
+                    brand_values: document.getElementById('brandValues').value,
+                    content_themes: document.getElementById('contentThemes').value
+                };
+                
+                const response = await fetch('/api/brand-preferences', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(preferences)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showNotification('🎨 Preferencias guardadas exitosamente', 'success');
+                } else {
+                    showNotification(`Error: ${result.error}`, 'error');
+                }
+                
+            } catch (error) {
+                console.error('Error:', error);
+                showNotification('Error al guardar preferencias', 'error');
+            }
+        }
+        
+        // Cargar preferencias al cambiar a la pestaña de preferencias
+        function showTab(tabName) {
+            // Ocultar todas las pestañas
+            const tabs = document.querySelectorAll('.tab-content');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            
+            // Mostrar la pestaña seleccionada
+            document.getElementById(`tab-${tabName}`).classList.add('active');
+            
+            // Actualizar navegación
+            const navItems = document.querySelectorAll('.sidebar a');
+            navItems.forEach(item => item.classList.remove('bg-blue-700'));
+            event.target.closest('a').classList.add('bg-blue-700');
+            
+            // Cargar preferencias si es la pestaña de preferencias
+            if (tabName === 'preferencias') {
+                loadBrandPreferences();
+            }
+        }
         
         // Ajustar layout en cambio de orientación
         window.addEventListener('resize', function() {

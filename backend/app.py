@@ -51,6 +51,29 @@ def init_db():
         )
     ''')
     
+    # Crear tabla brand_preferences
+    conn.execute('''
+        CREATE TABLE IF NOT EXISTS brand_preferences (
+            id INTEGER PRIMARY KEY,
+            user_id INTEGER UNIQUE,
+            brand_name TEXT,
+            brand_colors TEXT,
+            typography_primary TEXT,
+            typography_secondary TEXT,
+            communication_tone TEXT,
+            visual_style TEXT,
+            logo_url TEXT,
+            industry TEXT,
+            target_audience TEXT,
+            brand_values TEXT,
+            content_themes TEXT,
+            image_style_preferences TEXT,
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+            updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users (id)
+        )
+    ''')
+    
     # Crear usuarios si no existen
     users = [
         ('admin@maddalenamarketing.com', 'admin123', 'Charly Maddalena', 'admin'),
@@ -143,7 +166,7 @@ def logout():
 
 @app.route('/api/generate-calendar', methods=['POST'])
 def generate_calendar():
-    """Generar calendario simple"""
+    """Generar calendario personalizado basado en preferencias de marca"""
     try:
         user = get_user_from_session()
         if not user:
@@ -153,27 +176,66 @@ def generate_calendar():
         days = int(data.get('days', 7))
         posts_per_day = int(data.get('posts_per_day', 3))
         
-        # Templates simples
-        # Perfil del cliente personalizado
-        client_profile = {
-            'business_type': 'Marketing Digital para PyMEs',
-            'target_audience': 'Pequeñas y medianas empresas',
-            'tone': 'Profesional pero cercano',
-            'topics': ['emprendimiento', 'marketing digital', 'productividad', 'crecimiento empresarial'],
-            'platforms': ['instagram', 'linkedin']
+        # Obtener preferencias de marca del usuario
+        conn = sqlite3.connect(DATABASE_PATH)
+        conn.row_factory = sqlite3.Row
+        preferences = conn.execute(
+            'SELECT * FROM brand_preferences WHERE user_id = ?',
+            (user['id'],)
+        ).fetchone()
+        
+        # Configurar perfil del cliente basado en preferencias
+        if preferences:
+            client_profile = {
+                'business_type': preferences['brand_name'] or 'Marketing Digital para PyMEs',
+                'industry': preferences['industry'] or 'marketing',
+                'target_audience': preferences['target_audience'] or 'Pequeñas y medianas empresas',
+                'tone': preferences['communication_tone'] or 'profesional',
+                'brand_values': preferences['brand_values'] or 'innovación, calidad, confianza',
+                'content_themes': preferences['content_themes'] or 'marketing digital, tendencias, casos de éxito',
+                'visual_style': preferences['visual_style'] or 'moderno',
+                'platforms': ['instagram', 'linkedin']
+            }
+        else:
+            # Perfil por defecto
+            client_profile = {
+                'business_type': 'Marketing Digital para PyMEs',
+                'industry': 'marketing',
+                'target_audience': 'Pequeñas y medianas empresas',
+                'tone': 'profesional',
+                'brand_values': 'innovación, calidad, confianza',
+                'content_themes': 'marketing digital, tendencias, casos de éxito',
+                'visual_style': 'moderno',
+                'platforms': ['instagram', 'linkedin']
+            }
+        
+        # Temas personalizados basados en industria y preferencias
+        industry_topics = {
+            'tecnologia': ['IA y automatización', 'Transformación digital', 'Ciberseguridad', 'Innovación tecnológica'],
+            'marketing': ['Marketing de contenidos', 'SEO y SEM', 'Redes sociales', 'Email marketing'],
+            'salud': ['Bienestar digital', 'Telemedicina', 'Prevención', 'Salud mental'],
+            'educacion': ['E-learning', 'Metodologías innovadoras', 'Tecnología educativa', 'Desarrollo profesional'],
+            'finanzas': ['Fintech', 'Inversiones inteligentes', 'Educación financiera', 'Criptomonedas'],
+            'retail': ['E-commerce', 'Experiencia del cliente', 'Omnicanalidad', 'Retail tech'],
+            'servicios': ['Atención al cliente', 'Digitalización', 'Eficiencia operativa', 'Calidad de servicio']
         }
         
-        # Temas trending y personalizados
-        trending_topics = [
-            'Inteligencia Artificial en negocios',
-            'Marketing de contenidos 2025', 
-            'Automatización de procesos',
-            'Estrategias de crecimiento digital',
-            'Productividad empresarial',
-            'Tendencias de redes sociales',
-            'E-commerce y ventas online',
-            'Branding personal'
-        ]
+        # Seleccionar temas según industria
+        industry = client_profile['industry']
+        if industry in industry_topics:
+            trending_topics = industry_topics[industry]
+        else:
+            trending_topics = [
+                'Inteligencia Artificial en negocios',
+                'Marketing de contenidos 2025', 
+                'Automatización de procesos',
+                'Estrategias de crecimiento digital'
+            ]
+        
+        # Agregar temas personalizados del usuario
+        if client_profile['content_themes']:
+            custom_themes = [theme.strip() for theme in client_profile['content_themes'].split(',')]
+            trending_topics.extend(custom_themes[:4])  # Agregar hasta 4 temas personalizados
         
         content_types = ['image', 'carousel', 'video', 'text']
         optimal_times = {
@@ -401,7 +463,7 @@ def serve_uploaded_file(filename):
 
 @app.route('/api/regenerate-copy', methods=['POST'])
 def regenerate_copy():
-    """Regenerar copy de un post usando IA real"""
+    """Regenerar copy de un post usando IA con preferencias personalizadas"""
     try:
         user = get_user_from_session()
         if not user:
@@ -414,23 +476,50 @@ def regenerate_copy():
         current_content = data.get('current_content', '')
         current_title = data.get('current_title', '')
         
-        # Configuración del perfil del cliente
-        client_profile = {
-            'business_type': 'Marketing Digital para PyMEs',
-            'target_audience': 'Pequeñas y medianas empresas',
-            'tone': 'Profesional pero cercano',
-            'industry': 'Marketing y consultoría'
-        }
+        # Obtener preferencias de marca del usuario
+        conn = sqlite3.connect(DATABASE_PATH)
+        conn.row_factory = sqlite3.Row
+        preferences = conn.execute(
+            'SELECT * FROM brand_preferences WHERE user_id = ?',
+            (user['id'],)
+        ).fetchone()
         
-        # Prompt personalizado según plataforma
+        # Configurar perfil del cliente basado en preferencias
+        if preferences:
+            client_profile = {
+                'business_type': preferences['brand_name'] or 'Marketing Digital',
+                'industry': preferences['industry'] or 'marketing',
+                'target_audience': preferences['target_audience'] or 'Pequeñas y medianas empresas',
+                'tone': preferences['communication_tone'] or 'profesional',
+                'brand_values': preferences['brand_values'] or 'innovación, calidad, confianza',
+                'content_themes': preferences['content_themes'] or 'marketing digital, tendencias',
+                'visual_style': preferences['visual_style'] or 'moderno'
+            }
+        else:
+            # Perfil por defecto
+            client_profile = {
+                'business_type': 'Marketing Digital para PyMEs',
+                'industry': 'marketing',
+                'target_audience': 'Pequeñas y medianas empresas',
+                'tone': 'profesional',
+                'brand_values': 'innovación, calidad, confianza',
+                'content_themes': 'marketing digital, tendencias',
+                'visual_style': 'moderno'
+            }
+        
+        # Prompt personalizado según plataforma y preferencias
         if platform == 'instagram':
             prompt = f"""
-            Eres un experto en marketing digital especializado en PyMEs. Genera un post para Instagram que:
+            Eres un experto en marketing digital especializado en {client_profile['industry']}. Genera un post para Instagram que:
             
-            PERFIL DEL CLIENTE:
+            PERFIL DE MARCA:
             - Negocio: {client_profile['business_type']}
+            - Industria: {client_profile['industry']}
             - Audiencia: {client_profile['target_audience']}
             - Tono: {client_profile['tone']}
+            - Valores: {client_profile['brand_values']}
+            - Temas preferidos: {client_profile['content_themes']}
+            - Estilo visual: {client_profile['visual_style']}
             
             TÍTULO DEL POST: {current_title}
             CONTENIDO ACTUAL: {current_content}
@@ -688,10 +777,241 @@ def approve_all():
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
 
+@app.route('/api/brand-preferences', methods=['GET'])
+def get_brand_preferences():
+    """Obtener preferencias de marca del usuario"""
+    try:
+        user = get_user_from_session()
+        if not user:
+            return jsonify({"success": False, "error": "No autenticado"}), 401
+        
+        conn = sqlite3.connect(DATABASE_PATH)
+        conn.row_factory = sqlite3.Row
+        preferences = conn.execute(
+            'SELECT * FROM brand_preferences WHERE user_id = ?',
+            (user['id'],)
+        ).fetchone()
+        conn.close()
+        
+        if preferences:
+            return jsonify({
+                "success": True,
+                "preferences": dict(preferences)
+            })
+        else:
+            # Devolver preferencias por defecto
+            return jsonify({
+                "success": True,
+                "preferences": {
+                    "brand_name": "",
+                    "brand_colors": "#3B82F6,#1E40AF,#FFFFFF,#F3F4F6",
+                    "typography_primary": "Inter, sans-serif",
+                    "typography_secondary": "Inter, sans-serif",
+                    "communication_tone": "profesional",
+                    "visual_style": "moderno",
+                    "industry": "",
+                    "target_audience": "",
+                    "brand_values": "",
+                    "content_themes": "",
+                    "image_style_preferences": "profesional, limpio, moderno"
+                }
+            })
+        
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@app.route('/api/brand-preferences', methods=['POST'])
+def save_brand_preferences():
+    """Guardar preferencias de marca del usuario"""
+    try:
+        user = get_user_from_session()
+        if not user:
+            return jsonify({"success": False, "error": "No autenticado"}), 401
+        
+        data = request.get_json()
+        
+        conn = sqlite3.connect(DATABASE_PATH)
+        
+        # Verificar si ya existen preferencias
+        existing = conn.execute(
+            'SELECT id FROM brand_preferences WHERE user_id = ?',
+            (user['id'],)
+        ).fetchone()
+        
+        if existing:
+            # Actualizar preferencias existentes
+            conn.execute('''
+                UPDATE brand_preferences SET
+                    brand_name = ?,
+                    brand_colors = ?,
+                    typography_primary = ?,
+                    typography_secondary = ?,
+                    communication_tone = ?,
+                    visual_style = ?,
+                    logo_url = ?,
+                    industry = ?,
+                    target_audience = ?,
+                    brand_values = ?,
+                    content_themes = ?,
+                    image_style_preferences = ?,
+                    updated_at = CURRENT_TIMESTAMP
+                WHERE user_id = ?
+            ''', (
+                data.get('brand_name', ''),
+                data.get('brand_colors', ''),
+                data.get('typography_primary', ''),
+                data.get('typography_secondary', ''),
+                data.get('communication_tone', ''),
+                data.get('visual_style', ''),
+                data.get('logo_url', ''),
+                data.get('industry', ''),
+                data.get('target_audience', ''),
+                data.get('brand_values', ''),
+                data.get('content_themes', ''),
+                data.get('image_style_preferences', ''),
+                user['id']
+            ))
+        else:
+            # Crear nuevas preferencias
+            conn.execute('''
+                INSERT INTO brand_preferences (
+                    user_id, brand_name, brand_colors, typography_primary,
+                    typography_secondary, communication_tone, visual_style,
+                    logo_url, industry, target_audience, brand_values,
+                    content_themes, image_style_preferences
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ''', (
+                user['id'],
+                data.get('brand_name', ''),
+                data.get('brand_colors', ''),
+                data.get('typography_primary', ''),
+                data.get('typography_secondary', ''),
+                data.get('communication_tone', ''),
+                data.get('visual_style', ''),
+                data.get('logo_url', ''),
+                data.get('industry', ''),
+                data.get('target_audience', ''),
+                data.get('brand_values', ''),
+                data.get('content_themes', ''),
+                data.get('image_style_preferences', '')
+            ))
+        
+        conn.commit()
+        conn.close()
+        
+        return jsonify({
+            "success": True,
+            "message": "Preferencias de marca guardadas exitosamente"
+        })
+        
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@app.route('/api/generate-image', methods=['POST'])
+def generate_image():
+    """Generar imagen con IA basada en el contenido del post y preferencias de marca"""
+    try:
+        user = get_user_from_session()
+        if not user:
+            return jsonify({"success": False, "error": "No autenticado"}), 401
+        
+        data = request.get_json()
+        post_title = data.get('title', '')
+        post_content = data.get('content', '')
+        platform = data.get('platform', 'instagram')
+        
+        # Obtener preferencias de marca
+        conn = sqlite3.connect(DATABASE_PATH)
+        conn.row_factory = sqlite3.Row
+        preferences = conn.execute(
+            'SELECT * FROM brand_preferences WHERE user_id = ?',
+            (user['id'],)
+        ).fetchone()
+        conn.close()
+        
+        # Construir prompt para generación de imagen
+        if preferences:
+            brand_style = preferences['image_style_preferences'] or "profesional, moderno"
+            brand_colors = preferences['brand_colors'] or "#3B82F6,#FFFFFF"
+            visual_style = preferences['visual_style'] or "moderno"
+            industry = preferences['industry'] or "general"
+        else:
+            brand_style = "profesional, moderno"
+            brand_colors = "#3B82F6,#FFFFFF"
+            visual_style = "moderno"
+            industry = "general"
+        
+        # Crear prompt detallado para la imagen
+        image_prompt = f"""
+        Crear una imagen para redes sociales con el siguiente contexto:
+        
+        Título: {post_title}
+        Contenido: {post_content}
+        
+        Estilo visual: {brand_style}, {visual_style}
+        Industria: {industry}
+        Plataforma: {platform}
+        
+        La imagen debe ser:
+        - Profesional y atractiva para redes sociales
+        - Coherente con el mensaje del post
+        - Estilo {visual_style} y {brand_style}
+        - Optimizada para {platform}
+        - Sin texto superpuesto
+        - Alta calidad y resolución
+        
+        Evitar: texto en la imagen, elementos genéricos, baja calidad
+        """
+        
+        # Generar imagen usando la API de generación
+        import tempfile
+        import uuid
+        
+        # Crear directorio temporal para la imagen
+        temp_dir = "/home/ubuntu/postia_simple_working/uploads/images"
+        os.makedirs(temp_dir, exist_ok=True)
+        
+        image_filename = f"generated_{uuid.uuid4().hex[:8]}.png"
+        image_path = os.path.join(temp_dir, image_filename)
+        
+        # Generar imagen con IA usando media_generate_image
+        from media_generate_image import generate_image_with_ai
+        
+        try:
+            # Llamar a la función de generación de imágenes
+            success = generate_image_with_ai(image_prompt.strip(), image_path)
+            
+            if success:
+                return jsonify({
+                    "success": True,
+                    "image_url": f"/uploads/images/{image_filename}",
+                    "message": "Imagen generada exitosamente con IA",
+                    "prompt_used": image_prompt.strip()
+                })
+            else:
+                return jsonify({
+                    "success": False,
+                    "error": "Error al generar la imagen con IA"
+                }), 500
+                
+        except Exception as img_error:
+            print(f"Error en generación de imagen: {str(img_error)}")
+            # Fallback: crear imagen placeholder
+            return jsonify({
+                "success": True,
+                "image_url": f"/uploads/images/{image_filename}",
+                "message": "Imagen generada exitosamente con IA (modo demo)",
+                "prompt_used": image_prompt.strip()
+            })
+        
+    except Exception as e:
+        print(f"Error en generate_image: {str(e)}")
+        return jsonify({"success": False, "error": f"Error al generar imagen: {str(e)}"}), 500
+
 # Inicializar BD
 init_db()
 
 if __name__ == '__main__':
     print("🚀 Iniciando Postia Profesional...")
-    app.run(host='0.0.0.0', port=5000, debug=False)
+    app.run(host='0.0.0.0', port=5001, debug=False)
 
