@@ -1940,6 +1940,14 @@
                 const result = await response.json();
                 
                 if (result.success) {
+                    // Ocultar el área azul de instrucciones
+                    const instructionArea = Array.from(document.querySelectorAll('*')).find(el => 
+                        el.textContent && el.textContent.includes('Crear una imagen para redes sociales')
+                    );
+                    if (instructionArea) {
+                        instructionArea.style.display = 'none';
+                    }
+                    
                     // Mostrar la imagen generada
                     const previewDiv = document.getElementById('singleImagePreview');
                     const previewImg = document.getElementById('previewImg');
@@ -1950,6 +1958,7 @@
                         const imageUrl = result.image_url + '?t=' + Date.now();
                         previewImg.src = imageUrl;
                         previewDiv.classList.remove('hidden');
+                        previewDiv.style.display = 'block';
                         
                         // Mostrar botón de limpiar
                         if (clearButton) {
@@ -1961,6 +1970,13 @@
                         if (imageCount) {
                             imageCount.textContent = '1';
                         }
+                        
+                        // Actualizar selectedFiles para que el sistema sepa que hay una imagen
+                        selectedFiles = [{
+                            url: result.image_url,
+                            name: 'imagen_generada_ia.png',
+                            type: 'image/png'
+                        }];
                         
                         console.log('✅ Imagen generada y mostrada:', imageUrl);
                     }
