@@ -1,0 +1,1734 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Postia - Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.1/lucide.min.css" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <style>
+        .calendar-day {
+            min-height: 120px;
+            border: 1px solid #e5e7eb;
+        }
+        .content-preview {
+            font-size: 10px;
+            line-height: 1.2;
+        }
+        .media-thumbnail {
+            width: 40px;
+            height: 40px;
+            object-fit: cover;
+            border-radius: 4px;
+        }
+        .carousel-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 2px;
+        }
+        .modal {
+            backdrop-filter: blur(4px);
+        }
+        .token-meter {
+            background: linear-gradient(90deg, #10b981 0%, #f59e0b 70%, #ef4444 100%);
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            padding: 12px 24px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+        }
+        .notification.show {
+            transform: translateX(0);
+        }
+        .notification.success {
+            background: #10b981;
+        }
+        .notification.error {
+            background: #ef4444;
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .post-card {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .post-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        .platform-instagram {
+            background: linear-gradient(45deg, #f09433 0%,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888 100%);
+        }
+        .platform-linkedin {
+            background: #0077b5;
+        }
+        .sidebar {
+            background: linear-gradient(180deg, #1e3a8a 0%, #1e40af 100%);
+        }
+        .content-area {
+            background: #f8fafc;
+        }
+        
+        /* Estilos para el calendario real */
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        .calendar-nav-btn {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .calendar-nav-btn:hover {
+            background: #2563eb;
+        }
+        .calendar-nav-btn:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 1px;
+            background: #e5e7eb;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+            overflow: hidden;
+        }
+        .calendar-cell {
+            background: white;
+            min-height: 100px;
+            padding: 0.5rem;
+            position: relative;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .calendar-cell:hover {
+            background: #f3f4f6;
+        }
+        .calendar-cell.other-month {
+            background: #f9fafb;
+            color: #9ca3af;
+        }
+        .calendar-cell.past {
+            background: #f3f4f6;
+            color: #6b7280;
+            cursor: not-allowed;
+        }
+        .calendar-cell.today {
+            background: #dbeafe;
+            border: 2px solid #3b82f6;
+        }
+        .day-number {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+        
+        /* RESPONSIVE DESIGN PARA MÓVIL */
+        @media (max-width: 768px) {
+            /* Ocultar sidebar en móvil */
+            .sidebar {
+                position: fixed;
+                left: -100%;
+                top: 0;
+                height: 100vh;
+                width: 280px;
+                z-index: 50;
+                transition: left 0.3s ease;
+            }
+            
+            .sidebar.mobile-open {
+                left: 0;
+            }
+            
+            /* Overlay para cerrar sidebar */
+            .sidebar-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0, 0, 0, 0.5);
+                z-index: 40;
+                display: none;
+            }
+            
+            .sidebar-overlay.show {
+                display: block;
+            }
+            
+            /* Header móvil */
+            .mobile-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 1rem;
+                background: white;
+                border-bottom: 1px solid #e5e7eb;
+                position: sticky;
+                top: 0;
+                z-index: 30;
+            }
+            
+            .mobile-menu-btn {
+                background: #3b82f6;
+                color: white;
+                border: none;
+                padding: 0.5rem;
+                border-radius: 0.375rem;
+                cursor: pointer;
+            }
+            
+            /* Contenido principal en móvil */
+            .main-content {
+                margin-left: 0 !important;
+                padding: 1rem;
+            }
+            
+            /* Modal responsive */
+            .modal-content {
+                margin: 0;
+                max-height: 100vh;
+                border-radius: 0;
+                overflow-y: auto;
+            }
+            
+            /* Botones del modal en móvil */
+            .modal-buttons {
+                position: sticky;
+                bottom: 0;
+                background: white;
+                padding: 1rem;
+                border-top: 1px solid #e5e7eb;
+                margin: 0 -1.5rem -1.5rem -1.5rem;
+            }
+            
+            .modal-buttons > div {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .modal-buttons button {
+                width: 100%;
+                padding: 0.75rem 1rem;
+                font-size: 0.875rem;
+            }
+            
+            /* Grid de estadísticas en móvil */
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr) !important;
+                gap: 0.75rem;
+            }
+            
+            .stat-card {
+                padding: 1rem !important;
+            }
+            
+            .stat-card h3 {
+                font-size: 0.875rem !important;
+            }
+            
+            .stat-card .stat-number {
+                font-size: 1.5rem !important;
+            }
+            
+            /* Botones de acción en móvil */
+            .action-buttons {
+                flex-direction: column !important;
+                gap: 0.5rem;
+            }
+            
+            .action-buttons button {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            /* Calendario en móvil */
+            .calendar-cell {
+                min-height: 80px;
+                padding: 0.25rem;
+            }
+            
+            .calendar-cell .text-xs {
+                font-size: 0.625rem;
+            }
+            
+            /* Modal en móvil */
+            .modal-content {
+                margin: 0 !important;
+                width: 100% !important;
+                height: 100vh !important;
+                max-width: none !important;
+                border-radius: 0 !important;
+                overflow-y: auto;
+            }
+            
+            .modal-body {
+                flex-direction: column !important;
+                gap: 1rem;
+            }
+            
+            .modal-body > div {
+                width: 100% !important;
+            }
+            
+            /* Navegación de tabs en móvil */
+            .tab-navigation {
+                overflow-x: auto;
+                white-space: nowrap;
+                -webkit-overflow-scrolling: touch;
+            }
+            
+            .tab-navigation a {
+                min-width: 120px;
+                text-align: center;
+            }
+            
+            /* Texto más pequeño en móvil */
+            .mobile-text-sm {
+                font-size: 0.875rem;
+            }
+            
+            /* Ocultar elementos no esenciales en móvil */
+            .desktop-only {
+                display: none !important;
+            }
+        }
+        
+        /* Tablet responsive */
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .sidebar {
+                width: 200px;
+            }
+            
+            .main-content {
+                margin-left: 200px;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        /* Desktop */
+        @media (min-width: 1025px) {
+            .mobile-header {
+                display: none;
+            }
+            
+            .sidebar-overlay {
+                display: none !important;
+            }
+        }
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .calendar-nav-btn:hover {
+            background: #2563eb;
+        }
+        .calendar-nav-btn:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 1px;
+            background: #e5e7eb;
+            border: 1px solid #e5e7eb;
+        }
+        .calendar-cell {
+            background: white;
+            min-height: 100px;
+            padding: 0.5rem;
+            position: relative;
+        }
+        .calendar-cell.today {
+            background: #dbeafe;
+            border: 2px solid #3b82f6;
+        }
+        .calendar-cell.past {
+            background: #f3f4f6;
+            color: #9ca3af;
+        }
+        .calendar-cell.other-month {
+            background: #f9fafb;
+            color: #d1d5db;
+        }
+        .day-number {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+        .calendar-cell.today .day-number {
+            color: #1d4ed8;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans">
+    <!-- Header Móvil -->
+    <div class="mobile-header md:hidden">
+        <button class="mobile-menu-btn" onclick="toggleMobileSidebar()">
+            <i data-lucide="menu" class="w-5 h-5"></i>
+        </button>
+        <div class="flex items-center">
+            <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center mr-2">
+                <span class="text-white font-bold">P</span>
+            </div>
+            <span class="font-semibold text-gray-900">Postia</span>
+        </div>
+        <button onclick="logout()" class="text-red-600">
+            <i data-lucide="log-out" class="w-5 h-5"></i>
+        </button>
+    </div>
+
+    <!-- Overlay para cerrar sidebar en móvil -->
+    <div class="sidebar-overlay" onclick="closeMobileSidebar()"></div>
+
+    <!-- Header Desktop -->
+    <header class="bg-white shadow-sm border-b border-gray-200 hidden md:block">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+                            <span class="text-white font-bold text-lg">P</span>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <h1 class="text-xl font-semibold text-gray-900">Postia</h1>
+                        <p class="text-sm text-gray-500">Gestión de contenido con IA</p>
+                    </div>
+                </div>
+                
+                <div class="flex items-center space-x-4">
+                    <div class="flex items-center space-x-2">
+                        <div class="w-2 h-2 bg-green-400 rounded-full"></div>
+                        <span class="text-sm text-gray-600">En línea</span>
+                    </div>
+                    
+                    <div class="relative">
+                        <button class="flex items-center space-x-2 text-gray-700 hover:text-gray-900">
+                            <div class="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
+                                <i data-lucide="user" class="w-4 h-4"></i>
+                            </div>
+                            <span class="text-sm font-medium">Admin</span>
+                        </button>
+                    </div>
+                    
+                    <button onclick="logout()" class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                        <i data-lucide="log-out" class="w-4 h-4 mr-1"></i>
+                        Salir
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="flex h-screen md:pt-16">
+        <!-- Sidebar -->
+        <div id="sidebar" class="w-64 sidebar text-white md:relative md:translate-x-0">
+            <div class="p-6">
+                <!-- Botón cerrar en móvil -->
+                <div class="flex justify-between items-center mb-6 md:hidden">
+                    <div class="flex items-center">
+                        <div class="w-8 h-8 bg-white bg-opacity-20 rounded-lg flex items-center justify-center mr-2">
+                            <span class="text-white font-bold">P</span>
+                        </div>
+                        <span class="font-semibold">Postia</span>
+                    </div>
+                    <button onclick="closeMobileSidebar()" class="text-white">
+                        <i data-lucide="x" class="w-5 h-5"></i>
+                    </button>
+                </div>
+                
+                <nav class="space-y-2 tab-navigation">
+                    <a href="#" onclick="showTab('inicio'); closeMobileSidebar();" class="tab-btn flex items-center space-x-3 text-white hover:bg-white hover:bg-opacity-10 rounded-lg px-3 py-2 transition-colors active">
+                        <i data-lucide="home" class="w-5 h-5"></i>
+                        <span>Inicio</span>
+                    </a>
+                    <a href="#" onclick="showTab('analytics'); closeMobileSidebar();" class="tab-btn flex items-center space-x-3 text-white hover:bg-white hover:bg-opacity-10 rounded-lg px-3 py-2 transition-colors">
+                        <i data-lucide="bar-chart-3" class="w-5 h-5"></i>
+                        <span>Analytics</span>
+                    </a>
+                    <a href="#" onclick="showTab('trending'); closeMobileSidebar();" class="tab-btn flex items-center space-x-3 text-white hover:bg-white hover:bg-opacity-10 rounded-lg px-3 py-2 transition-colors">
+                        <i data-lucide="trending-up" class="w-5 h-5"></i>
+                        <span>Trending</span>
+                    </a>
+                    <a href="#" onclick="showTab('preferencias'); closeMobileSidebar();" class="tab-btn flex items-center space-x-3 text-white hover:bg-white hover:bg-opacity-10 rounded-lg px-3 py-2 transition-colors">
+                        <i data-lucide="settings" class="w-5 h-5"></i>
+                        <span>Preferencias</span>
+                    </a>
+                </nav>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="flex-1 content-area overflow-auto main-content ml-0 md:ml-64">
+            <!-- Tab: Inicio -->
+            <div id="tab-inicio" class="tab-content active p-6">
+                <div class="mb-6">
+                    <div class="gradient-bg text-white rounded-xl p-6 mb-6">
+                        <h2 class="text-2xl font-bold mb-2">¡Bienvenido de vuelta!</h2>
+                        <p class="text-blue-100">Tu plataforma de gestión de contenido con IA está lista para impulsar tu negocio</p>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+                        <div class="bg-white rounded-lg shadow p-6">
+                            <div class="flex items-center">
+                                <div class="p-2 bg-blue-100 rounded-lg">
+                                    <i data-lucide="calendar" class="w-6 h-6 text-blue-600"></i>
+                                </div>
+                                <div class="ml-4">
+                                    <p class="text-sm font-medium text-gray-600">Posts Programados</p>
+                                    <p class="text-2xl font-semibold text-gray-900" id="scheduled-count">0</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white rounded-lg shadow p-6">
+                            <div class="flex items-center">
+                                <div class="p-2 bg-green-100 rounded-lg">
+                                    <i data-lucide="check-circle" class="w-6 h-6 text-green-600"></i>
+                                </div>
+                                <div class="ml-4">
+                                    <p class="text-sm font-medium text-gray-600">Publicados</p>
+                                    <p class="text-2xl font-semibold text-gray-900">0</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white rounded-lg shadow p-6">
+                            <div class="flex items-center">
+                                <div class="p-2 bg-yellow-100 rounded-lg">
+                                    <i data-lucide="clock" class="w-6 h-6 text-yellow-600"></i>
+                                </div>
+                                <div class="ml-4">
+                                    <p class="text-sm font-medium text-gray-600">En Borrador</p>
+                                    <p class="text-2xl font-semibold text-gray-900" id="draft-count">0</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white rounded-lg shadow p-6">
+                            <div class="flex items-center">
+                                <div class="p-2 bg-purple-100 rounded-lg">
+                                    <i data-lucide="zap" class="w-6 h-6 text-purple-600"></i>
+                                </div>
+                                <div class="ml-4">
+                                    <p class="text-sm font-medium text-gray-600">Engagement</p>
+                                    <p class="text-2xl font-semibold text-gray-900">5.2%</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="mb-6">
+                    <div class="action-buttons flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4">
+                        <button onclick="showGenerateModal()" class="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            <i data-lucide="sparkles" class="w-4 h-4 mr-2"></i>
+                            Generar Contenido
+                        </button>
+                        
+                        <button onclick="approveAll()" class="inline-flex items-center justify-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            <i data-lucide="check-circle" class="w-4 h-4 mr-2"></i>
+                            Aprobar Todo
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Calendar -->
+                <div class="bg-white rounded-lg shadow">
+                    <div class="px-6 py-4 border-b border-gray-200">
+                        <div class="calendar-header">
+                            <h3 class="text-lg font-medium text-gray-900">Calendario de Contenido</h3>
+                            <div class="flex items-center space-x-4">
+                                <button id="prevMonth" class="calendar-nav-btn">
+                                    <i data-lucide="chevron-left" class="w-4 h-4"></i>
+                                </button>
+                                <h4 id="currentMonth" class="text-lg font-semibold text-gray-900 min-w-[200px] text-center"></h4>
+                                <button id="nextMonth" class="calendar-nav-btn">
+                                    <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <div class="calendar-grid" id="calendar-container">
+                            <!-- Calendar will be generated here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab: Analytics -->
+            <div id="tab-analytics" class="tab-content p-6">
+                <h2 class="text-2xl font-bold text-gray-900 mb-6">Analytics</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Rendimiento por Plataforma</h3>
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm text-gray-600">Instagram</span>
+                                <span class="text-sm font-medium text-gray-900">4.2% engagement</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm text-gray-600">LinkedIn</span>
+                                <span class="text-sm font-medium text-gray-900">6.8% engagement</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Mejores Horarios</h3>
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm text-gray-600">Instagram</span>
+                                <span class="text-sm font-medium text-gray-900">18:00 - 20:00</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm text-gray-600">LinkedIn</span>
+                                <span class="text-sm font-medium text-gray-900">08:00 - 10:00</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Crecimiento</h3>
+                        <div class="text-center">
+                            <div class="text-3xl font-bold text-green-600">+12%</div>
+                            <div class="text-sm text-gray-600">Este mes</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab: Trending -->
+            <div id="tab-trending" class="tab-content p-6">
+                <h2 class="text-2xl font-bold text-gray-900 mb-6">Trending</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Hashtags Trending</h3>
+                        <div class="space-y-2">
+                            <span class="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">#emprendimiento</span>
+                            <span class="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">#pymes</span>
+                            <span class="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">#marketing</span>
+                            <span class="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">#negocios</span>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Temas Sugeridos</h3>
+                        <ul class="space-y-2 text-sm text-gray-600">
+                            <li>• Estrategias de crecimiento para PyMEs</li>
+                            <li>• Marketing digital efectivo</li>
+                            <li>• Productividad empresarial</li>
+                            <li>• Innovación en negocios</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab: Preferencias -->
+            <div id="tab-preferencias" class="tab-content p-6">
+                <h2 class="text-2xl font-bold text-gray-900 mb-6">Preferencias</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Perfil de Usuario</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Descripción del negocio</label>
+                                <textarea class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" rows="3" placeholder="Describe tu negocio..."></textarea>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Tono de comunicación</label>
+                                <select class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option>Profesional</option>
+                                    <option>Casual</option>
+                                    <option>Inspiracional</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Configuración de Plataformas</h3>
+                        <div class="space-y-4">
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm font-medium text-gray-700">Instagram</span>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" class="sr-only peer" checked>
+                                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                                </label>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm font-medium text-gray-700">LinkedIn</span>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" class="sr-only peer" checked>
+                                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Generar Contenido -->
+    <div id="generateModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50 modal">
+        <div class="bg-white rounded-lg max-w-md w-full mx-4 shadow-xl">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-lg font-medium text-gray-900">Generar Contenido</h3>
+                    <button onclick="hideGenerateModal()" class="text-gray-400 hover:text-gray-600">
+                        <i data-lucide="x" class="w-5 h-5"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="px-6 py-4">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Días a generar</label>
+                    <input type="number" id="days" value="7" min="1" max="30" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Fecha de inicio</label>
+                    <input type="date" id="startDate" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                </div>
+                
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Posts por día</label>
+                    <select id="postsPerDay" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <option value="1">1 post por día</option>
+                        <option value="2">2 posts por día</option>
+                        <option value="3" selected>3 posts por día</option>
+                        <option value="4">4 posts por día</option>
+                        <option value="5">5 posts por día</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="px-6 py-4 bg-gray-50 rounded-b-lg">
+                <div class="flex space-x-3">
+                    <button onclick="hideGenerateModal()" class="flex-1 px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        Cancelar
+                    </button>
+                    <button onclick="generateContent()" class="flex-1 px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        Generar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Editar Post OPTIMIZADO -->
+    <div id="editPostModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50 modal">
+        <div class="bg-white rounded-lg max-w-4xl w-full mx-4 shadow-xl max-h-[95vh] overflow-y-auto">
+            <div class="px-6 py-4 border-b border-gray-200 sticky top-0 bg-white z-10">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-lg font-medium text-gray-900">Editar Post</h3>
+                    <button onclick="hideEditPostModal()" class="text-gray-400 hover:text-gray-600">
+                        <i data-lucide="x" class="w-5 h-5"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="px-6 py-4 overflow-y-auto max-h-[calc(95vh-140px)]">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Columna Izquierda: Contenido Principal -->
+                    <div class="space-y-4">
+                        <!-- Título del Post -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Título del Post</label>
+                            <input type="text" id="editPostTitle" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Título del post...">
+                        </div>
+                        
+                        <!-- Contenido del Post -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Contenido</label>
+                            <textarea id="editPostContent" rows="4" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Escribe el contenido del post..."></textarea>
+                            <div class="text-xs text-gray-500 mt-1">
+                                <span id="characterCount">0</span> caracteres
+                            </div>
+                        </div>
+                        
+                        <!-- Hashtags -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Hashtags</label>
+                            <input type="text" id="editPostHashtags" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="#marketing #emprendimiento #pymes">
+                            <div class="text-xs text-gray-500 mt-1">Separar hashtags con espacios</div>
+                            
+                            <!-- Botón Regenerar IA debajo de hashtags -->
+                            <div class="mt-2">
+                                <button onclick="regenerateWithAI()" class="inline-flex items-center px-3 py-1.5 border border-purple-300 text-xs font-medium rounded text-purple-700 bg-white hover:bg-purple-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500">
+                                    <i data-lucide="sparkles" class="w-3 h-3 mr-1"></i>
+                                    Regenerar IA
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Predicción de Engagement -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Predicción de Engagement</label>
+                            <div class="bg-gray-50 rounded-lg p-3">
+                                <div class="flex items-center justify-between text-sm">
+                                    <span class="text-gray-600">Estimado:</span>
+                                    <span id="engagementPrediction" class="font-medium text-green-600">4.2% - 6.8%</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2 mt-2">
+                                    <div class="bg-green-500 h-2 rounded-full" style="width: 65%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Columna Derecha: Configuración y Media -->
+                    <div class="space-y-4">
+                        <!-- Tipo de Contenido y Plataformas en una fila -->
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Tipo de Contenido</label>
+                                <select id="editContentType" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                    <option value="image">📷 Imagen</option>
+                                    <option value="carousel">🎠 Carrusel</option>
+                                    <option value="video">🎥 Video</option>
+                                    <option value="text">📝 Solo Texto</option>
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Plataformas</label>
+                                <div class="flex space-x-3 mt-2">
+                                    <label class="flex items-center">
+                                        <input type="checkbox" id="editPlatformInstagram" class="rounded border-gray-300 text-pink-600 focus:ring-pink-500">
+                                        <span class="ml-1 text-xs text-gray-700">📱 IG</span>
+                                    </label>
+                                    <label class="flex items-center">
+                                        <input type="checkbox" id="editPlatformLinkedin" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                        <span class="ml-1 text-xs text-gray-700">💼 LI</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Fecha y Hora -->
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Fecha</label>
+                                <input type="date" id="editPostDate" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Hora</label>
+                                <input type="time" id="editPostTime" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            </div>
+                        </div>
+                        
+                        <!-- Imagen/Media -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Imagen/Media</label>
+                            <div class="border-2 border-dashed border-gray-300 rounded-lg p-3">
+                                <!-- Preview de múltiples imágenes para carrusel -->
+                                <div id="multipleImagePreview" class="hidden mb-2">
+                                    <div class="grid grid-cols-3 gap-1" id="imageGrid">
+                                        <!-- Las imágenes se agregarán aquí dinámicamente -->
+                                    </div>
+                                    <div class="text-xs text-gray-500 mt-1">
+                                        <span id="imageCount">0</span> archivos seleccionados
+                                    </div>
+                                </div>
+                                
+                                <!-- Preview de imagen simple -->
+                                <div id="singleImagePreview" class="hidden mb-2">
+                                    <img id="previewImg" src="" alt="Preview" class="w-full h-24 object-cover rounded">
+                                </div>
+                                
+                                <div class="text-center">
+                                    <input type="file" id="imageUpload" accept="image/*,video/*" class="hidden">
+                                    <input type="file" id="multipleImageUpload" accept="image/*,video/*" multiple class="hidden">
+                                    
+                                    <button type="button" id="uploadButton" onclick="handleUploadClick()" class="inline-flex items-center px-2 py-1 border border-gray-300 shadow-sm text-xs leading-4 font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                        <i data-lucide="upload" class="w-3 h-3 mr-1"></i>
+                                        <span id="uploadButtonText">Subir</span>
+                                    </button>
+                                    
+                                    <button type="button" id="clearMediaButton" onclick="clearAllMedia()" class="hidden ml-1 inline-flex items-center px-2 py-1 border border-red-300 shadow-sm text-xs leading-4 font-medium rounded text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                                        <i data-lucide="trash-2" class="w-3 h-3 mr-1"></i>
+                                        Limpiar
+                                    </button>
+                                    
+                                    <p class="text-xs text-gray-500 mt-1">
+                                        <span id="uploadHelpText">PNG, JPG, MP4</span>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="px-6 py-3 bg-gray-50 sticky bottom-0 border-t border-gray-200">
+                <div class="modal-buttons flex justify-end items-center pt-4">
+                    <div class="flex space-x-2">
+                        <button onclick="deletePost()" class="inline-flex items-center px-3 py-1.5 border border-red-300 text-xs font-medium rounded text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                            <i data-lucide="trash-2" class="w-3 h-3 mr-1"></i>
+                            Eliminar
+                        </button>
+                        <button onclick="savePost()" class="px-3 py-1.5 border border-transparent text-xs font-medium rounded text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            Guardar Cambios
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification -->
+    <div id="notification" class="notification">
+        <span id="notification-text"></span>
+    </div>
+
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+        
+        // Variables globales
+        let currentDate = new Date();
+        let selectedFiles = [];
+        let currentContentType = 'image';
+        let allPosts = [];
+        
+        // Set today's date as default
+        document.getElementById('startDate').value = new Date().toISOString().split('T')[0];
+        
+        // Tab functionality
+        function showTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Remove active class from all tab buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Show selected tab
+            document.getElementById('tab-' + tabName).classList.add('active');
+            
+            // Add active class to clicked button
+            event.target.closest('.tab-btn').classList.add('active');
+        }
+        
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            const text = document.getElementById('notification-text');
+            
+            text.textContent = message;
+            notification.className = `notification ${type} show`;
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+        
+        function showGenerateModal() {
+            document.getElementById('generateModal').classList.remove('hidden');
+        }
+        
+        function hideGenerateModal() {
+            document.getElementById('generateModal').classList.add('hidden');
+        }
+        
+        async function generateContent() {
+            const days = document.getElementById('days').value;
+            const postsPerDay = document.getElementById('postsPerDay').value;
+            
+            try {
+                const response = await fetch('/api/generate-calendar', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ days: parseInt(days), posts_per_day: parseInt(postsPerDay) })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showNotification('✨ Contenido generado exitosamente!', 'success');
+                    hideGenerateModal();
+                    loadPosts();
+                    updateStats();
+                } else {
+                    showNotification('Error: ' + data.error, 'error');
+                }
+            } catch (error) {
+                showNotification('Error de conexión: ' + error.message, 'error');
+            }
+        }
+        
+        // Calendario real con navegación
+        function generateRealCalendar() {
+            const container = document.getElementById('calendar-container');
+            const monthNames = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+                'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+            const dayNames = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+            
+            // Actualizar título del mes
+            document.getElementById('currentMonth').textContent = 
+                `${monthNames[currentDate.getMonth()]} ${currentDate.getFullYear()}`;
+            
+            // Limpiar calendario
+            container.innerHTML = '';
+            
+            // Headers de días
+            dayNames.forEach(day => {
+                const dayHeader = document.createElement('div');
+                dayHeader.className = 'calendar-cell bg-gray-100 font-semibold text-center text-sm text-gray-700 min-h-[40px] flex items-center justify-center';
+                dayHeader.textContent = day;
+                container.appendChild(dayHeader);
+            });
+            
+            // Obtener primer día del mes y días en el mes
+            const firstDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+            const lastDay = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
+            const startDate = new Date(firstDay);
+            startDate.setDate(startDate.getDate() - firstDay.getDay());
+            
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
+            // Generar 42 días (6 semanas)
+            for (let i = 0; i < 42; i++) {
+                const cellDate = new Date(startDate);
+                cellDate.setDate(startDate.getDate() + i);
+                
+                const dayDiv = document.createElement('div');
+                dayDiv.className = 'calendar-cell';
+                
+                // Determinar clases CSS
+                if (cellDate.getMonth() !== currentDate.getMonth()) {
+                    dayDiv.classList.add('other-month');
+                } else if (cellDate < today) {
+                    dayDiv.classList.add('past');
+                } else if (cellDate.getTime() === today.getTime()) {
+                    dayDiv.classList.add('today');
+                }
+                
+                const dayNumber = document.createElement('div');
+                dayNumber.className = 'day-number';
+                dayNumber.textContent = cellDate.getDate();
+                dayDiv.appendChild(dayNumber);
+                
+                // Agregar posts para esta fecha
+                const dateStr = cellDate.toISOString().split('T')[0];
+                const dayPosts = allPosts.filter(post => post.scheduled_date === dateStr);
+                
+                dayPosts.forEach(post => {
+                    const postDiv = document.createElement('div');
+                    postDiv.className = `text-xs p-1 mb-1 rounded cursor-pointer ${post.platform === 'instagram' ? 'bg-pink-100 text-pink-800 hover:bg-pink-200' : 'bg-blue-100 text-blue-800 hover:bg-blue-200'}`;
+                    postDiv.textContent = post.title.substring(0, 15) + '...';
+                    postDiv.onclick = () => showPostModal(post);
+                    dayDiv.appendChild(postDiv);
+                });
+                
+                container.appendChild(dayDiv);
+            }
+            
+            // Actualizar botones de navegación
+            const prevBtn = document.getElementById('prevMonth');
+            const nextBtn = document.getElementById('nextMonth');
+            
+            const currentMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+            const thisMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+            
+            prevBtn.disabled = currentMonth <= thisMonth;
+        }
+        
+        // Navegación del calendario
+        document.getElementById('prevMonth').addEventListener('click', () => {
+            currentDate.setMonth(currentDate.getMonth() - 1);
+            generateRealCalendar();
+        });
+        
+        document.getElementById('nextMonth').addEventListener('click', () => {
+            currentDate.setMonth(currentDate.getMonth() + 1);
+            generateRealCalendar();
+        });
+        
+        async function loadPosts() {
+            try {
+                const response = await fetch('/api/posts', {
+                    credentials: 'include'
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    allPosts = data.posts;
+                    generateRealCalendar();
+                }
+            } catch (error) {
+                console.error('Error cargando posts:', error);
+            }
+        }
+        
+        // Funciones del modal de edición
+        function showPostModal(post) {
+            // Llenar el modal con los datos del post
+            document.getElementById('editPostTitle').value = post.title || '';
+            document.getElementById('editPostContent').value = post.content || '';
+            document.getElementById('editContentType').value = post.content_type || 'image';
+            document.getElementById('editPostHashtags').value = post.hashtags || '';
+            
+            // Configurar plataformas
+            document.getElementById('editPlatformInstagram').checked = post.platform === 'instagram' || post.platforms?.includes('instagram');
+            document.getElementById('editPlatformLinkedin').checked = post.platform === 'linkedin' || post.platforms?.includes('linkedin');
+            
+            // Configurar fecha y hora
+            if (post.scheduled_date) {
+                document.getElementById('editPostDate').value = post.scheduled_date;
+            }
+            if (post.scheduled_time) {
+                document.getElementById('editPostTime').value = post.scheduled_time;
+            }
+            
+            // Cargar imágenes existentes si las hay
+            selectedFiles = [];
+            if (post.media_files) {
+                const mediaFiles = post.media_files.split(',').filter(file => file.trim());
+                selectedFiles = mediaFiles.map(file => ({
+                    url: file.startsWith('/uploads/') ? file : `/uploads/images/${file}`,
+                    name: file.split('/').pop(),
+                    type: file.includes('.mp4') ? 'video/mp4' : 'image/jpeg'
+                }));
+            }
+            
+            // Actualizar interfaz de medios
+            currentContentType = post.content_type || 'image';
+            updateMediaInterface();
+            
+            if (selectedFiles.length > 0) {
+                if (currentContentType === 'carousel') {
+                    updateMultipleImagePreview();
+                    document.getElementById('multipleImagePreview').classList.remove('hidden');
+                } else {
+                    // Para imagen simple, usar el elemento previewImg correcto
+                    const previewImg = document.getElementById('previewImg');
+                    const singlePreview = document.getElementById('singleImagePreview');
+                    const clearMediaButton = document.getElementById('clearMediaButton');
+                    
+                    if (previewImg && singlePreview) {
+                        previewImg.src = selectedFiles[0].url;
+                        singlePreview.classList.remove('hidden');
+                        if (clearMediaButton) {
+                            clearMediaButton.classList.remove('hidden');
+                        }
+                    }
+                }
+            }
+            
+            // Guardar ID del post para edición
+            window.currentEditingPost = post;
+            
+            // Mostrar modal
+            document.getElementById('editPostModal').classList.remove('hidden');
+            
+            // Actualizar contador de caracteres
+            updateCharacterCount();
+            updateMediaInterface();
+        }
+        
+        function hideEditPostModal() {
+            document.getElementById('editPostModal').classList.add('hidden');
+            window.currentEditingPost = null;
+            clearAllMedia();
+        }
+        
+        function updateCharacterCount() {
+            const content = document.getElementById('editPostContent').value;
+            document.getElementById('characterCount').textContent = content.length;
+        }
+        
+        // Funciones para manejo de medios
+        function handleUploadClick() {
+            const contentType = document.getElementById('editContentType').value;
+            if (contentType === 'carousel') {
+                document.getElementById('multipleImageUpload').click();
+            } else {
+                document.getElementById('imageUpload').click();
+            }
+        }
+        
+        function updateMediaInterface() {
+            const contentType = document.getElementById('editContentType').value;
+            const uploadButton = document.getElementById('uploadButtonText');
+            const helpText = document.getElementById('uploadHelpText');
+            const clearButton = document.getElementById('clearMediaButton');
+            
+            if (contentType === 'carousel') {
+                uploadButton.textContent = 'Subir Múltiples';
+                helpText.textContent = 'Múltiples imágenes/videos';
+                if (selectedFiles.length > 0) clearButton.classList.remove('hidden');
+            } else {
+                uploadButton.textContent = 'Subir';
+                helpText.textContent = 'PNG, JPG, MP4';
+                if (selectedFiles.length === 0) {
+                    clearButton.classList.add('hidden');
+                }
+            }
+            
+            // Mostrar/ocultar previews según el tipo
+            if (contentType === 'carousel' && selectedFiles.length > 0) {
+                document.getElementById('multipleImagePreview').classList.remove('hidden');
+                document.getElementById('singleImagePreview').classList.add('hidden');
+            } else if (contentType !== 'carousel' && selectedFiles.length > 0) {
+                document.getElementById('singleImagePreview').classList.remove('hidden');
+                document.getElementById('multipleImagePreview').classList.add('hidden');
+            } else {
+                document.getElementById('multipleImagePreview').classList.add('hidden');
+                document.getElementById('singleImagePreview').classList.add('hidden');
+            }
+        }
+        
+        function clearAllMedia() {
+            selectedFiles = [];
+            document.getElementById('imageGrid').innerHTML = '';
+            document.getElementById('multipleImagePreview').classList.add('hidden');
+            document.getElementById('singleImagePreview').classList.add('hidden');
+            document.getElementById('clearMediaButton').classList.add('hidden');
+            document.getElementById('imageCount').textContent = '0';
+            
+            // Limpiar inputs
+            document.getElementById('imageUpload').value = '';
+            document.getElementById('multipleImageUpload').value = '';
+        }
+        
+        function removeFile(index) {
+            selectedFiles.splice(index, 1);
+            updateMultipleImagePreview();
+            
+            if (selectedFiles.length === 0) {
+                document.getElementById('multipleImagePreview').classList.add('hidden');
+                document.getElementById('clearMediaButton').classList.add('hidden');
+            }
+        }
+        
+        function updateMultipleImagePreview() {
+            const imageGrid = document.getElementById('imageGrid');
+            imageGrid.innerHTML = '';
+            
+            selectedFiles.forEach((file, index) => {
+                const mediaContainer = document.createElement('div');
+                mediaContainer.className = 'relative group';
+                
+                let mediaElement;
+                if (file.type && file.type.startsWith('image/') || file.url && !file.url.includes('.mp4')) {
+                    mediaElement = document.createElement('img');
+                    mediaElement.src = file.url || (file instanceof File ? URL.createObjectURL(file) : '');
+                    mediaElement.className = 'w-full h-16 object-cover rounded';
+                } else if (file.type && file.type.startsWith('video/') || file.url && file.url.includes('.mp4')) {
+                    mediaElement = document.createElement('video');
+                    mediaElement.src = file.url || (file instanceof File ? URL.createObjectURL(file) : '');
+                    mediaElement.className = 'w-full h-16 object-cover rounded';
+                    mediaElement.controls = false;
+                    mediaElement.muted = true;
+                }
+                
+                // Botón para eliminar archivo
+                const removeButton = document.createElement('button');
+                removeButton.type = 'button';
+                removeButton.className = 'absolute top-0 right-0 bg-red-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity';
+                removeButton.innerHTML = '×';
+                removeButton.onclick = () => removeFile(index);
+                
+                // Indicador de tipo de archivo
+                const typeIndicator = document.createElement('div');
+                typeIndicator.className = 'absolute bottom-0 left-0 bg-black bg-opacity-50 text-white text-xs px-1 rounded';
+                typeIndicator.textContent = (file.type && file.type.startsWith('video/')) || (file.url && file.url.includes('.mp4')) ? '🎥' : '📷';
+                
+                mediaContainer.appendChild(mediaElement);
+                mediaContainer.appendChild(removeButton);
+                mediaContainer.appendChild(typeIndicator);
+                imageGrid.appendChild(mediaContainer);
+            });
+            
+            document.getElementById('imageCount').textContent = selectedFiles.length;
+        }
+        
+        async function savePost() {
+            if (!window.currentEditingPost) {
+                showNotification('❌ No hay post seleccionado para guardar', 'error');
+                return;
+            }
+            
+            // Validaciones básicas
+            const title = document.getElementById('editPostTitle').value.trim();
+            const content = document.getElementById('editPostContent').value.trim();
+            
+            if (!title) {
+                showNotification('❌ El título es obligatorio', 'error');
+                return;
+            }
+            
+            if (!content) {
+                showNotification('❌ El contenido es obligatorio', 'error');
+                return;
+            }
+            
+            const postData = {
+                id: window.currentEditingPost.id,
+                title: title,
+                content: content,
+                content_type: document.getElementById('editContentType').value,
+                hashtags: document.getElementById('editPostHashtags').value,
+                scheduled_date: document.getElementById('editPostDate').value,
+                scheduled_time: document.getElementById('editPostTime').value,
+                platforms: [],
+                media_files: selectedFiles.map(file => file.url || file.name || '').filter(url => url)
+            };
+            
+            // Agregar plataformas seleccionadas
+            if (document.getElementById('editPlatformInstagram').checked) {
+                postData.platforms.push('instagram');
+            }
+            if (document.getElementById('editPlatformLinkedin').checked) {
+                postData.platforms.push('linkedin');
+            }
+            
+            // Validar que al menos una plataforma esté seleccionada
+            if (postData.platforms.length === 0) {
+                showNotification('❌ Selecciona al menos una plataforma', 'error');
+                return;
+            }
+            
+            try {
+                // Mostrar indicador de carga
+                showNotification('💾 Guardando cambios...', 'success');
+                
+                const response = await fetch(`/api/posts/${postData.id}`, {
+                    method: 'PUT',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify(postData)
+                });
+                
+                // Verificar si la respuesta es válida
+                if (!response.ok) {
+                    throw new Error(`Error HTTP: ${response.status} - ${response.statusText}`);
+                }
+                
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    throw new Error('La respuesta del servidor no es JSON válido');
+                }
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showNotification('✅ Post actualizado exitosamente!', 'success');
+                    hideEditPostModal();
+                    loadPosts();
+                } else {
+                    showNotification('❌ Error al guardar: ' + (data.error || 'Error desconocido'), 'error');
+                }
+            } catch (error) {
+                console.error('Error en savePost:', error);
+                showNotification('❌ Error de conexión al guardar: ' + error.message, 'error');
+            }
+        }
+        
+        function handleUploadClick() {
+            const contentType = document.getElementById('editContentType').value;
+            
+            if (contentType === 'carousel') {
+                document.getElementById('multipleImageUpload').click();
+            } else if (contentType === 'image' || contentType === 'video') {
+                document.getElementById('imageUpload').click();
+            } else {
+                showNotification('Selecciona un tipo de contenido que requiera archivos', 'error');
+            }
+        }
+        
+        function clearAllMedia() {
+            selectedFiles = [];
+            document.getElementById('singleImagePreview').classList.add('hidden');
+            document.getElementById('multipleImagePreview').classList.add('hidden');
+            document.getElementById('clearMediaButton').classList.add('hidden');
+            document.getElementById('imageUpload').value = '';
+            document.getElementById('multipleImageUpload').value = '';
+        }
+        
+        function removeFile(index) {
+            selectedFiles.splice(index, 1);
+            if (selectedFiles.length === 0) {
+                clearAllMedia();
+            } else {
+                updateMultipleImagePreview();
+            }
+        }
+        
+        async function deletePost() {
+            if (!window.currentEditingPost) return;
+            
+            if (!confirm('¿Estás seguro de que quieres eliminar este post?')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/posts/${window.currentEditingPost.id}`, {
+                    method: 'DELETE',
+                    credentials: 'include'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showNotification('🗑️ Post eliminado exitosamente!', 'success');
+                    hideEditPostModal();
+                    loadPosts();
+                } else {
+                    showNotification('Error: ' + data.error, 'error');
+                }
+            } catch (error) {
+                showNotification('Error de conexión: ' + error.message, 'error');
+            }
+        }
+        
+        async function regenerateWithAI() {
+            if (!window.currentEditingPost) return;
+            
+            const regenerateButton = document.querySelector('[onclick="regenerateWithAI()"]');
+            const originalText = regenerateButton.innerHTML;
+            regenerateButton.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 mr-2 animate-spin"></i>Regenerando...';
+            regenerateButton.disabled = true;
+            
+            try {
+                const currentContent = document.getElementById('editPostContent').value;
+                const currentTitle = document.getElementById('editPostTitle').value;
+                const platform = document.getElementById('editPlatformInstagram').checked ? 'instagram' : 'linkedin';
+                const contentType = document.getElementById('editContentType').value;
+                
+                const response = await fetch('/api/regenerate-copy', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        post_id: window.currentEditingPost.id,
+                        platform: platform,
+                        content_type: contentType,
+                        current_content: currentContent,
+                        current_title: currentTitle
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Actualizar el contenido en el modal
+                    document.getElementById('editPostContent').value = data.new_content;
+                    document.getElementById('editPostHashtags').value = data.new_hashtags;
+                    
+                    // Actualizar contador de caracteres
+                    updateCharacterCount();
+                    
+                    showNotification('🤖 Copy regenerado con IA exitosamente', 'success');
+                } else {
+                    showNotification('❌ Error al regenerar copy: ' + data.error, 'error');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showNotification('❌ Error de conexión al regenerar copy', 'error');
+            } finally {
+                regenerateButton.innerHTML = originalText;
+                regenerateButton.disabled = false;
+                lucide.createIcons();
+            }
+        }
+        
+        // Event listeners
+        document.getElementById('editPostContent').addEventListener('input', updateCharacterCount);
+        document.getElementById('editContentType').addEventListener('change', function() {
+            currentContentType = this.value;
+            updateMediaInterface();
+        });
+        
+        // Preview de imagen simple
+        document.getElementById('imageUpload').addEventListener('change', async function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                await uploadSingleFile(file);
+            }
+        });
+        
+        // Preview de múltiples imágenes
+        document.getElementById('multipleImageUpload').addEventListener('change', async function(e) {
+            const files = Array.from(e.target.files);
+            if (files.length > 0) {
+                await uploadMultipleFiles(files);
+            }
+        });
+        
+        async function uploadSingleFile(file) {
+            try {
+                console.log('🔄 Iniciando uploadSingleFile con archivo:', file.name);
+                
+                // Validaciones previas
+                if (!file) {
+                    showNotification('❌ No se seleccionó ningún archivo', 'error');
+                    return;
+                }
+                
+                // Validar tipo de archivo
+                const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'video/mp4'];
+                if (!allowedTypes.includes(file.type)) {
+                    showNotification('❌ Tipo de archivo no válido. Solo se permiten JPG, PNG y MP4', 'error');
+                    return;
+                }
+                
+                // Validar tamaño (máximo 10MB)
+                const maxSize = 10 * 1024 * 1024; // 10MB
+                if (file.size > maxSize) {
+                    showNotification('❌ El archivo es demasiado grande. Máximo 10MB', 'error');
+                    return;
+                }
+                
+                // Mostrar indicador de carga
+                showNotification('📤 Subiendo archivo...', 'success');
+                
+                const formData = new FormData();
+                formData.append('file', file);
+                
+                // Si ya hay archivos, indicar que se va a reemplazar
+                if (selectedFiles.length > 0) {
+                    formData.append('replace_existing', 'true');
+                }
+                
+                const response = await fetch('/api/upload-image', {
+                    method: 'POST',
+                    credentials: 'include',
+                    body: formData
+                });
+                
+                // Verificar si la respuesta es válida
+                if (!response.ok) {
+                    throw new Error(`Error HTTP: ${response.status} - ${response.statusText}`);
+                }
+                
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    throw new Error('La respuesta del servidor no es JSON válido');
+                }
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    console.log('✅ Subida exitosa, actualizando UI...');
+                    
+                    selectedFiles = [{
+                        url: data.file_url,
+                        name: data.original_name,
+                        type: file.type
+                    }];
+                    
+                    // Verificar que los elementos existen antes de usarlos
+                    const previewImg = document.getElementById('previewImg');
+                    const singleImagePreview = document.getElementById('singleImagePreview');
+                    const clearMediaButton = document.getElementById('clearMediaButton');
+                    
+                    if (previewImg && singleImagePreview && clearMediaButton) {
+                        console.log('🖼️ Actualizando imagen preview con URL:', data.file_url);
+                        
+                        // Forzar recarga de la imagen agregando timestamp
+                        const imageUrl = data.file_url + '?t=' + Date.now();
+                        previewImg.src = imageUrl;
+                        previewImg.onload = function() {
+                            console.log('✅ Imagen cargada exitosamente');
+                        };
+                        previewImg.onerror = function() {
+                            console.error('❌ Error al cargar la imagen');
+                        };
+                        
+                        singleImagePreview.classList.remove('hidden');
+                        clearMediaButton.classList.remove('hidden');
+                        
+                        console.log('✅ UI actualizada correctamente');
+                    } else {
+                        console.error('❌ No se encontraron elementos del DOM para preview');
+                    }
+                    
+                    showNotification('✅ Archivo subido exitosamente', 'success');
+                } else {
+                    showNotification('❌ Error al subir archivo: ' + (data.error || 'Error desconocido'), 'error');
+                }
+            } catch (error) {
+                console.error('Error en uploadSingleFile:', error);
+                showNotification('❌ Error de conexión al subir archivo: ' + error.message, 'error');
+            }
+        }
+        
+        async function uploadMultipleFiles(files) {
+            try {
+                const uploadPromises = files.map(async (file) => {
+                    const formData = new FormData();
+                    formData.append('file', file);
+                    
+                    const response = await fetch('/api/upload-image', {
+                        method: 'POST',
+                        credentials: 'include',
+                        body: formData
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        return {
+                            url: data.file_url,
+                            name: data.original_name,
+                            type: file.type
+                        };
+                    } else {
+                        throw new Error(data.error);
+                    }
+                });
+                
+                const uploadedFiles = await Promise.all(uploadPromises);
+                selectedFiles = [...selectedFiles, ...uploadedFiles];
+                
+                if (selectedFiles.length > 10) {
+                    selectedFiles = selectedFiles.slice(0, 10);
+                    showNotification('Máximo 10 archivos permitidos para carrusel', 'error');
+                }
+                
+                updateMultipleImagePreview();
+                document.getElementById('multipleImagePreview').classList.remove('hidden');
+                document.getElementById('clearMediaButton').classList.remove('hidden');
+                
+                showNotification(`✅ ${uploadedFiles.length} archivos subidos exitosamente`, 'success');
+                
+            } catch (error) {
+                showNotification('❌ Error al subir archivos: ' + error.message, 'error');
+            }
+        }
+        
+        function updateStats() {
+            fetch('/api/posts', { credentials: 'include' })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        document.getElementById('scheduled-count').textContent = data.posts.length;
+                        document.getElementById('draft-count').textContent = data.posts.filter(p => p.status === 'draft').length;
+                    }
+                });
+        }
+        
+        async function approveAll() {
+            try {
+                const response = await fetch('/api/approve-all', {
+                    method: 'POST',
+                    credentials: 'include'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showNotification('✅ Todos los posts aprobados!', 'success');
+                    updateStats();
+                } else {
+                    showNotification('Error: ' + data.error, 'error');
+                }
+            } catch (error) {
+                showNotification('Error: ' + error.message, 'error');
+            }
+        }
+        
+        async function logout() {
+            try {
+                await fetch('/api/logout', { method: 'POST', credentials: 'include' });
+                window.location.reload();
+            } catch (error) {
+                console.error('Error en logout:', error);
+            }
+        }
+        
+        // Funciones para navegación móvil
+        function toggleMobileSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.querySelector('.sidebar-overlay');
+            
+            sidebar.classList.toggle('mobile-open');
+            overlay.classList.toggle('show');
+        }
+        
+        function closeMobileSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.querySelector('.sidebar-overlay');
+            
+            sidebar.classList.remove('mobile-open');
+            overlay.classList.remove('show');
+        }
+        
+        // Cerrar sidebar al hacer click fuera en móvil
+        document.addEventListener('click', function(e) {
+            const sidebar = document.getElementById('sidebar');
+            const menuBtn = document.querySelector('.mobile-menu-btn');
+            
+            if (window.innerWidth <= 768 && 
+                !sidebar.contains(e.target) && 
+                !menuBtn.contains(e.target) && 
+                sidebar.classList.contains('mobile-open')) {
+                closeMobileSidebar();
+            }
+        });
+        
+        // Ajustar layout en cambio de orientación
+        window.addEventListener('resize', function() {
+            if (window.innerWidth > 768) {
+                closeMobileSidebar();
+            }
+        });
+        
+        // Inicializar
+        loadPosts();
+        updateStats();
+        generateRealCalendar();
+    </script>
+</body>
+</html>
+
