@@ -515,6 +515,155 @@ def regenerate_copy():
     except Exception as e:
         return jsonify({"success": False, "error": f"Error al regenerar copy: {str(e)}"}), 500
 
+@app.route('/api/generate-hashtags', methods=['POST'])
+def generate_hashtags():
+    """Generar hashtags con IA basados en el contenido del post"""
+    try:
+        user = get_user_from_session()
+        if not user:
+            return jsonify({"success": False, "error": "No autenticado"}), 401
+        
+        data = request.get_json()
+        content = data.get('content', '')
+        title = data.get('title', '')
+        platform = data.get('platform', 'instagram')
+        industry = data.get('industry', 'marketing digital')
+        
+        if not content and not title:
+            return jsonify({"success": False, "error": "Se requiere contenido o título"}), 400
+        
+        # Configuración del perfil del cliente
+        client_profile = {
+            'business_type': 'Marketing Digital para PyMEs',
+            'target_audience': 'Pequeñas y medianas empresas',
+            'industry': industry
+        }
+        
+        # Prompt personalizado según plataforma
+        if platform == 'instagram':
+            prompt = f"""
+            Eres un experto en marketing digital especializado en hashtags para Instagram.
+            
+            PERFIL DEL CLIENTE:
+            - Negocio: {client_profile['business_type']}
+            - Audiencia: {client_profile['target_audience']}
+            - Industria: {client_profile['industry']}
+            
+            CONTENIDO DEL POST:
+            Título: {title}
+            Contenido: {content}
+            
+            INSTRUCCIONES:
+            - Genera 10-12 hashtags estratégicos para Instagram
+            - Mezcla hashtags populares (100K-1M posts) con hashtags nicho (10K-100K posts)
+            - Incluye hashtags específicos de la industria
+            - Incluye hashtags de ubicación si es relevante (Argentina/LATAM)
+            - Incluye hashtags de comunidad (#pymes #emprendedores)
+            - Evita hashtags demasiado genéricos (#love #instagood)
+            - Prioriza hashtags que generen engagement real
+            
+            CATEGORÍAS A INCLUIR:
+            - 3-4 hashtags de industria específica
+            - 2-3 hashtags de audiencia objetivo
+            - 2-3 hashtags de contenido/tema
+            - 2-3 hashtags de comunidad/networking
+            
+            Responde SOLO con los hashtags separados por espacios, cada uno empezando con #
+            """
+        else:  # LinkedIn
+            prompt = f"""
+            Eres un consultor en marketing digital especializado en hashtags profesionales para LinkedIn.
+            
+            PERFIL DEL CLIENTE:
+            - Negocio: {client_profile['business_type']}
+            - Audiencia: {client_profile['target_audience']}
+            - Industria: {client_profile['industry']}
+            
+            CONTENIDO DEL POST:
+            Título: {title}
+            Contenido: {content}
+            
+            INSTRUCCIONES:
+            - Genera 5-7 hashtags profesionales para LinkedIn
+            - Enfócate en hashtags de industria y profesionales
+            - Incluye hashtags de networking empresarial
+            - Evita hashtags demasiado casuales
+            - Prioriza hashtags que conecten con tomadores de decisión
+            
+            CATEGORÍAS A INCLUIR:
+            - 2-3 hashtags de industria específica
+            - 2-3 hashtags profesionales/empresariales
+            - 1-2 hashtags de networking/comunidad
+            
+            Responde SOLO con los hashtags separados por espacios, cada uno empezando con #
+            """
+        
+        # Llamada a OpenAI
+        response = openai_client.chat.completions.create(
+            model="gpt-4.1-mini",
+            messages=[
+                {"role": "system", "content": "Eres un experto en marketing digital especializado en hashtags estratégicos para redes sociales."},
+                {"role": "user", "content": prompt}
+            ],
+            max_tokens=150,
+            temperature=0.7
+        )
+        
+        generated_hashtags = response.choices[0].message.content.strip()
+        
+        # Análisis adicional de hashtags
+        analysis_prompt = f"""
+        Analiza estos hashtags para {platform}: {generated_hashtags}
+        
+        Proporciona un breve análisis de:
+        1. Potencial de alcance (Alto/Medio/Bajo)
+        2. Nivel de competencia (Alto/Medio/Bajo)
+        3. Relevancia para PyMEs (Alta/Media/Baja)
+        
+        Responde en formato JSON:
+        {{
+            "reach_potential": "Alto/Medio/Bajo",
+            "competition_level": "Alto/Medio/Bajo", 
+            "relevance": "Alta/Media/Baja",
+            "recommendation": "Breve recomendación de uso"
+        }}
+        """
+        
+        analysis_response = openai_client.chat.completions.create(
+            model="gpt-4.1-mini",
+            messages=[
+                {"role": "user", "content": analysis_prompt}
+            ],
+            max_tokens=200,
+            temperature=0.3
+        )
+        
+        try:
+            import json
+            analysis = json.loads(analysis_response.choices[0].message.content.strip())
+        except:
+            analysis = {
+                "reach_potential": "Medio",
+                "competition_level": "Medio",
+                "relevance": "Alta",
+                "recommendation": "Hashtags optimizados para tu audiencia objetivo"
+            }
+        
+        return jsonify({
+            "success": True,
+            "hashtags": generated_hashtags,
+            "analysis": analysis,
+            "platform": platform,
+            "message": "Hashtags generados exitosamente con IA"
+        })
+        
+    except Exception as e:
+        print(f"Error detallado en generate_hashtags: {str(e)}")
+        print(f"Tipo de error: {type(e).__name__}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({"success": False, "error": f"Error al generar hashtags: {str(e)}"}), 500
+
 @app.route('/api/approve-all', methods=['POST'])
 def approve_all():
     """Aprobar todos los posts"""

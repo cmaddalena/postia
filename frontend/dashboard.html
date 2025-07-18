@@ -792,10 +792,14 @@
                             <div class="text-xs text-gray-500 mt-1">Separar hashtags con espacios</div>
                             
                             <!-- Botón Regenerar IA debajo de hashtags -->
-                            <div class="mt-2">
+                            <div class="mt-2 flex gap-2">
                                 <button onclick="regenerateWithAI()" class="inline-flex items-center px-3 py-1.5 border border-purple-300 text-xs font-medium rounded text-purple-700 bg-white hover:bg-purple-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500">
                                     <i data-lucide="sparkles" class="w-3 h-3 mr-1"></i>
                                     Regenerar IA
+                                </button>
+                                <button onclick="generateHashtagsAI()" class="inline-flex items-center px-3 py-1.5 border border-green-300 text-xs font-medium rounded text-green-700 bg-white hover:bg-green-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                                    <i data-lucide="hash" class="w-3 h-3 mr-1"></i>
+                                    Generar Hashtags IA
                                 </button>
                             </div>
                         </div>
@@ -1478,6 +1482,64 @@
             } finally {
                 regenerateButton.innerHTML = originalText;
                 regenerateButton.disabled = false;
+                lucide.createIcons();
+            }
+        }
+        
+        async function generateHashtagsAI() {
+            if (!window.currentEditingPost) return;
+            
+            const hashtagButton = document.querySelector('[onclick="generateHashtagsAI()"]');
+            const originalText = hashtagButton.innerHTML;
+            hashtagButton.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 mr-2 animate-spin"></i>Generando...';
+            hashtagButton.disabled = true;
+            
+            try {
+                const currentContent = document.getElementById('editPostContent').value;
+                const currentTitle = document.getElementById('editPostTitle').value;
+                const platform = document.getElementById('editPlatformInstagram').checked ? 'instagram' : 'linkedin';
+                
+                if (!currentContent && !currentTitle) {
+                    showNotification('⚠️ Agrega contenido o título para generar hashtags', 'error');
+                    return;
+                }
+                
+                const response = await fetch('/api/generate-hashtags', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        content: currentContent,
+                        title: currentTitle,
+                        platform: platform,
+                        industry: 'marketing digital'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Actualizar los hashtags en el modal
+                    document.getElementById('editPostHashtags').value = data.hashtags;
+                    
+                    // Mostrar análisis de hashtags si está disponible
+                    let analysisText = '';
+                    if (data.analysis) {
+                        analysisText = ` | Alcance: ${data.analysis.reach_potential} | Competencia: ${data.analysis.competition_level}`;
+                    }
+                    
+                    showNotification(`🎯 Hashtags generados para ${data.platform}${analysisText}`, 'success');
+                } else {
+                    showNotification('❌ Error al generar hashtags: ' + data.error, 'error');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showNotification('❌ Error de conexión al generar hashtags', 'error');
+            } finally {
+                hashtagButton.innerHTML = originalText;
+                hashtagButton.disabled = false;
                 lucide.createIcons();
             }
         }
