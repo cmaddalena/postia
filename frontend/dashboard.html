@@ -1943,16 +1943,31 @@
                     // Mostrar la imagen generada
                     const previewDiv = document.getElementById('singleImagePreview');
                     const previewImg = document.getElementById('previewImg');
+                    const clearButton = document.getElementById('clearMediaButton');
                     
-                    previewImg.src = result.image_url;
-                    previewDiv.classList.remove('hidden');
+                    if (previewImg && previewDiv) {
+                        // Agregar timestamp para evitar cache
+                        const imageUrl = result.image_url + '?t=' + Date.now();
+                        previewImg.src = imageUrl;
+                        previewDiv.classList.remove('hidden');
+                        
+                        // Mostrar botón de limpiar
+                        if (clearButton) {
+                            clearButton.classList.remove('hidden');
+                        }
+                        
+                        // Actualizar contador de archivos
+                        const imageCount = document.getElementById('imageCount');
+                        if (imageCount) {
+                            imageCount.textContent = '1';
+                        }
+                        
+                        console.log('✅ Imagen generada y mostrada:', imageUrl);
+                    }
                     
-                    // Mostrar botón de limpiar
-                    document.getElementById('clearMediaButton').classList.remove('hidden');
-                    
-                    showNotification(`🎨 ${result.message}`, 'success');
+                    showNotification('¡Imagen generada exitosamente con IA!', 'success');
                 } else {
-                    showNotification(`Error: ${result.error}`, 'error');
+                    showNotification(result.error || 'Error al generar imagen', 'error');
                 }
                 
             } catch (error) {
