@@ -1918,10 +1918,12 @@
                 }
                 
                 // Mostrar indicador de carga
-                const button = event.target;
-                const originalText = button.innerHTML;
-                button.innerHTML = '<i data-lucide="loader" class="w-3 h-3 mr-1 animate-spin"></i>Generando...';
-                button.disabled = true;
+                const button = document.querySelector('button[onclick="generateImageAI()"]');
+                const originalText = button ? button.innerHTML : '';
+                if (button) {
+                    button.innerHTML = '<i data-lucide="loader" class="w-3 h-3 mr-1 animate-spin"></i>Generando...';
+                    button.disabled = true;
+                }
                 
                 const response = await fetch('/api/generate-image', {
                     method: 'POST',
@@ -1958,9 +1960,11 @@
                 showNotification('Error de conexión al generar imagen', 'error');
             } finally {
                 // Restaurar botón
-                const button = event.target;
-                button.innerHTML = '<i data-lucide="image" class="w-3 h-3 mr-1"></i>🤖 Crear Imagen';
-                button.disabled = false;
+                const button = document.querySelector('button[onclick="generateImageAI()"]');
+                if (button) {
+                    button.innerHTML = '<i data-lucide="image" class="w-3 h-3 mr-1"></i>🤖 Crear Imagen';
+                    button.disabled = false;
+                }
                 lucide.createIcons();
             }
         }
