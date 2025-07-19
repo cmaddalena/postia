@@ -109,11 +109,11 @@ def index():
     
     if user:
         # Dashboard profesional completo
-        with open('dashboard_optimized.html', 'r', encoding='utf-8') as f:
+        with open('../frontend/dashboard.html', 'r', encoding='utf-8') as f:
             return f.read()
     
     # Login profesional
-    with open('login_professional.html', 'r', encoding='utf-8') as f:
+    with open('../frontend/login.html', 'r', encoding='utf-8') as f:
         return f.read()
 
 @app.route('/api/login', methods=['POST'])
