@@ -3,6 +3,9 @@ Postia - Versión con diseño profesional restaurado
 """
 
 from flask import Flask, request, jsonify, send_file, session, make_response
+
+from dotenv import load_dotenv
+load_dotenv()
 from flask_cors import CORS
 import sqlite3
 import hashlib
@@ -109,11 +112,11 @@ def index():
     
     if user:
         # Dashboard profesional completo
-        with open('../frontend/dashboard.html', 'r', encoding='utf-8') as f:
+        with open('/home/runner/workspace/frontend/dashboard.html', 'r', encoding='utf-8') as f:
             return f.read()
     
     # Login profesional
-    with open('../frontend/login.html', 'r', encoding='utf-8') as f:
+    with open('/home/runner/workspace/frontend/login.html', 'r', encoding='utf-8') as f:
         return f.read()
 
 @app.route('/api/login', methods=['POST'])
@@ -968,7 +971,7 @@ def generate_image():
         import uuid
         
         # Crear directorio temporal para la imagen
-        temp_dir = "/home/ubuntu/postia_simple_working/uploads/images"
+        temp_dir = "uploads/images"
         os.makedirs(temp_dir, exist_ok=True)
         
         image_filename = f"generated_{uuid.uuid4().hex[:8]}.png"
@@ -1014,4 +1017,8 @@ init_db()
 if __name__ == '__main__':
     print("🚀 Iniciando Postia Profesional...")
     app.run(host='0.0.0.0', port=5001, debug=False)
+
+
+
+
 
